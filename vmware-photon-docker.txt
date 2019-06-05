@@ -1,0 +1,92 @@
+################
+# VMWare Photon
+###
+
+# Setup Docker on VMWare Photon host
+
+Log in first time: root/changeme
+
+mkdir -p /etc/systemd/system/docker.service.d
+
+/etc/systemd/system/docker.service.d/options.conf:
+[Service]
+ExecStart=
+ExecStart=/usr/bin/dockerd -H unix:// -H tcp://0.0.0.0:2375
+
+systemctl daemon-reload
+systemctl restart docker
+
+iptables -A INPUT -p tcp --dport 2375 -j ACCEPT
+systemctl restart iptables
+
+Start Docker
+$ systemctl start docker
+$ systemctl enable docker
+
+Set static IP
+/etc/systemd/network/10-eth0-static.network:
+[Match]
+Name=eth0
+
+[Network]
+DHCP=no
+Address=x.x.x.x/xx
+Gateway=x.x.x.x.x
+DNS=x.x.x.x
+Domains=my.domain
+
+$ chmod 644 /etc/systemd/network/10-eth0-static.network
+$ rm /etc/systemd/network/99-dhcp-en.network
+
+# Connect local client
+
+echo "export DOCKER_HOST=tcp://x.x.x.x:2375" >> ~/.bashrc && source ~/.bashrc
+
+$ docker info
+Containers: 0
+ Running: 0
+ Paused: 0
+ Stopped: 0
+Images: 0
+Server Version: 18.06.1
+Storage Driver: overlay2
+ Backing Filesystem: extfs
+ Supports d_type: true
+ Native Overlay Diff: true
+Logging Driver: json-file
+Cgroup Driver: cgroupfs
+Plugins:
+ Volume: local
+ Network: bridge host macvlan null overlay
+ Log: awslogs fluentd gcplogs gelf journald json-file logentries splunk syslog
+Swarm: inactive
+Runtimes: runc
+Default Runtime: runc
+Init Binary: docker-init
+containerd version: 468a545b9edcd5932818eb9de8e72413e616e86e
+runc version: 69663f0bd4b60df09991c08812a60108003fa340
+init version: fec3683
+Security Options:
+ apparmor
+ seccomp
+  Profile: default
+Kernel Version: 4.19.15-1.ph3-esx
+Operating System: VMware Photon OS/Linux
+OSType: linux
+Architecture: x86_64
+CPUs: 1
+Total Memory: 1.952GiB
+Name: photon-machine
+ID: OUZO:VUNT:APGF:DASG:BZ7N:FZX5:VWG4:A243:EA4S:JWR2:M4QW:EQL6
+Docker Root Dir: /var/lib/docker
+Debug Mode (client): false
+Debug Mode (server): false
+Registry: https://index.docker.io/v1/
+Labels:
+Experimental: false
+Insecure Registries:
+ 127.0.0.0/8
+Live Restore Enabled: false
+
+
+References: https://github.com/vmware/photon/issues/691
