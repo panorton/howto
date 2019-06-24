@@ -88,5 +88,7 @@ Insecure Registries:
  127.0.0.0/8
 Live Restore Enabled: false
 
+# Firewall rules
+# "/etc/systemd/scripts/iptables is a script thats executed on iptables service start. so you can add your rules at the end of that script and the restore will be automatic."
 
 References: https://github.com/vmware/photon/issues/691
